@@ -1,5 +1,9 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/auth-context";
 import { AlertTriangle, Lightbulb, Route, Zap } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const benefits = [
   {
@@ -24,10 +28,20 @@ const benefits = [
   },
 ];
 
-const HomePage = () => {
+export default function HomePage() {
+  const router = useRouter();
+  const { user } = useAuth();
+
+  const handleSignIn = () => {
+    if (user) {
+      router.push("/dashboard");
+    } else {
+      router.push("/signin");
+    }
+  };
+
   return (
-    <div className=" bg-background">
-      {/* Hero Section */}
+    <div className="bg-background">
       <main className="max-w-4xl mx-auto px-6">
         <section className="py-20 md:py-28">
           <h1 className="text-3xl md:text-4xl font-semibold text-foreground leading-tight max-w-2xl">
@@ -41,14 +55,15 @@ const HomePage = () => {
           </p>
 
           <div className="mt-8 flex flex-col sm:flex-row items-start gap-4">
-            <Button className="w-full sm:w-auto">Sign in with Google</Button>
+            <Button onClick={handleSignIn} className="w-full sm:w-auto">
+              {user ? "Go to Dashboard" : "Sign in with Google"}
+            </Button>
           </div>
           <p className="mt-3 text-xs text-muted-foreground">
             No passwords. Secure. Instant access.
           </p>
         </section>
 
-        {/* Benefits Section */}
         <section className="py-12 border-t border-border">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {benefits.map((benefit) => (
@@ -71,6 +86,4 @@ const HomePage = () => {
       </main>
     </div>
   );
-};
-
-export default HomePage;
+}
