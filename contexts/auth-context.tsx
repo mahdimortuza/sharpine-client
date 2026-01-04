@@ -1,6 +1,6 @@
 "use client";
 
-import axios from "axios";
+import { AuthContextType, User } from "@/types";
 import { useRouter } from "next/navigation";
 import {
   createContext,
@@ -9,20 +9,6 @@ import {
   useEffect,
   useState,
 } from "react";
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  picture: string;
-}
-
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  login: (token: string) => Promise<void>;
-  logout: () => void;
-}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -38,49 +24,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const checkAuth = async () => {
-    const token = localStorage.getItem("auth_token");
-
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-
     try {
-      const response = await axios.get(`${API_URL}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await fetch(`${API_URL}/auth/me`, {
+        credentials: "include",
       });
-      setUser(response.data);
+
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
+      }
     } catch (error) {
-      localStorage.removeItem("auth_token");
-      setUser(null);
+      console.error("Auth check failed:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const login = async (token: string) => {
-    localStorage.setItem("auth_token", token);
-
+  const logout = async () => {
     try {
-      const response = await axios.get(`${API_URL}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
+      await fetch(`${API_URL}/auth/logout`, {
+        credentials: "include",
       });
-      setUser(response.data);
-      router.push("/dashboard");
+      setUser(null);
+      router.push("/");
     } catch (error) {
-      localStorage.removeItem("auth_token");
-      throw error;
+      console.error("Logout failed:", error);
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("auth_token");
-    setUser(null);
-    router.push("/");
-  };
-
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, logout }}>
       {children}
     </AuthContext.Provider>
   );

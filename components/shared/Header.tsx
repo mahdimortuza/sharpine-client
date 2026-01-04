@@ -1,14 +1,28 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/auth-context"; // global auth hook
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 type HeaderProps = {
   showLogin?: boolean;
 };
 
-const Header = ({ showLogin = false }: HeaderProps) => {
-  const pathname = usePathname();
+const Header = ({ showLogin = true }: HeaderProps) => {
+  const { user } = useAuth();
+  const router = useRouter();
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+  // global sign-in logic
+  const handleSignIn = () => {
+    if (user) {
+      router.push("/chat");
+    } else {
+      window.location.href = `${API_URL}/auth/google`;
+    }
+  };
 
   return (
     <header className="border-b border-border">
@@ -19,12 +33,9 @@ const Header = ({ showLogin = false }: HeaderProps) => {
 
         <nav className="flex items-center gap-6">
           {showLogin && (
-            <Link
-              href="/login"
-              className="text-sm text-muted-foreground hover:text-foreground"
-            >
-              Login
-            </Link>
+            <Button onClick={handleSignIn} size="sm">
+              {user ? "Chat" : "Sign In"}
+            </Button>
           )}
         </nav>
       </div>

@@ -7,20 +7,27 @@ import { useEffect } from "react";
 export default function CallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login } = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
-    const token = searchParams.get("token");
+    const error = searchParams.get("error");
 
-    if (token) {
-      login(token).catch((error) => {
-        console.error("Login failed:", error);
-        router.push("/signin");
-      });
-    } else {
-      router.push("/signin");
+    if (error) {
+      console.error("OAuth error:", error);
+      router.push("/?error=auth_failed");
+      return;
     }
-  }, [searchParams, login, router]);
+
+    // If user is already authenticated (cookie set by backend), redirect to chat
+    if (user) {
+      router.push("/chat");
+    } else {
+      // Wait a bit for cookie to be set, then check again
+      setTimeout(() => {
+        window.location.href = "/chat";
+      }, 1000);
+    }
+  }, [searchParams, user, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">

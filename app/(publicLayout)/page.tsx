@@ -1,9 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/auth-context";
+import { useGlobalSignIn } from "@/utils/auth";
 import { AlertTriangle, Lightbulb, Route, Zap } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 const benefits = [
   {
@@ -29,17 +28,7 @@ const benefits = [
 ];
 
 export default function HomePage() {
-  const router = useRouter();
-  const { user } = useAuth();
-
-  const handleSignIn = () => {
-    if (user) {
-      router.push("/dashboard");
-    } else {
-      router.push("/signin");
-    }
-  };
-
+  const { handleSignIn, user } = useGlobalSignIn();
   return (
     <div className="bg-background">
       <main className="max-w-4xl mx-auto px-6">
@@ -56,7 +45,7 @@ export default function HomePage() {
 
           <div className="mt-8 flex flex-col sm:flex-row items-start gap-4">
             <Button onClick={handleSignIn} className="w-full sm:w-auto">
-              {user ? "Go to Dashboard" : "Sign in with Google"}
+              {user ? "Go to Chat" : "Sign in with Google"}
             </Button>
           </div>
           <p className="mt-3 text-xs text-muted-foreground">
